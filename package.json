@@ -1,0 +1,20 @@
+{
+  "name": "voz-propia",
+  "version": "1.0.0",
+  "private": true,
+  "description": "App personal para practicar inglés y francés: lecturas propias, repaso espaciado y práctica para hablar.",
+  "scripts": {
+    "build": "node build.js",
+    "build:pwa": "node build.js --pwa",
+    "test": "node build.js --test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "2.117.2"
+  },
+  "devDependencies": {
+    "@resvg/resvg-js": "2.6.2"
+  }
+}

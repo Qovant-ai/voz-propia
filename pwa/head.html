@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Inglés y francés con lecturas propias, repaso espaciado y práctica para hablar.">
+<meta name="theme-color" content="#E8E9E5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#151B21" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Voz Propia">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="icon" href="icons/icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<style>
+body{margin:0}
+[hidden]{display:none!important}
+html.vp-locked,html.vp-locked body{overflow:hidden}
+#vp-auth{position:fixed;inset:0;z-index:50;background:var(--bg);display:grid;place-items:center;padding:max(16px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom));overflow-y:auto}
+.vp-card{width:100%;max-width:400px;display:flex;flex-direction:column;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:24px}
+.vp-logo .brand{width:64px;height:64px}
+.vp-f{display:flex;flex-direction:column;gap:6px;font-weight:700;font-size:.9rem}
+.vp-f input{font:inherit;font-weight:400;font-size:1rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px;min-height:48px}
+.vp-msg{min-height:1.2em;font-size:.92rem;color:var(--muted)}
+.vp-msg.bad{color:var(--bad)}
+.vp-links{display:flex;flex-wrap:wrap;gap:4px;justify-content:center}
+</style>
