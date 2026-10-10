@@ -6,12 +6,13 @@
   "scripts": {
     "build": "node build.js",
     "build:pwa": "node build.js --pwa",
-    "test": "node build.js --test"
+    "test": "node build.js --test",
+    "start": "node server.js"
   },
   "engines": {
     "node": ">=20"
   },
-  "devDependencies": {
+  "dependencies": {
     "@resvg/resvg-js": "2.6.2"
   }
 }
