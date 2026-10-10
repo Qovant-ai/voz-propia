@@ -25,7 +25,10 @@ if (process.argv.includes("--test")) {
 
 if (process.argv.includes("--pwa")) {
   const PWA = path.join(__dirname, "pwa"), DIST = path.join(__dirname, "dist");
-  const config = JSON.parse(fs.readFileSync(path.join(PWA, "config.json"), "utf8"));
+  // Variables de entorno opcionales (por ejemplo en Hostinger); si no están, se usa pwa/config.json
+  const fileCfg = JSON.parse(fs.readFileSync(path.join(PWA, "config.json"), "utf8"));
+  const config = { url: process.env.VP_SUPABASE_URL || fileCfg.url, key: process.env.VP_SUPABASE_PUBLISHABLE_KEY || fileCfg.key };
+  if (/^sb_secret_|service_role/i.test(config.key)) { console.error("Esa es una clave SECRETA de Supabase: nunca va en el navegador. Usa la publicable (sb_publishable_…)."); process.exit(1); }
   const adapter = fs.readFileSync(path.join(PWA, "adapter.js"), "utf8");
   try { new Function(adapter); } catch (e) { console.error("Error de sintaxis en pwa/adapter.js:", e.message); process.exit(1); }
   const supabaseUmd = path.join(__dirname, "node_modules", "@supabase", "supabase-js", "dist", "umd", "supabase.js");
@@ -57,6 +60,7 @@ ${js}
   const umd = fs.readFileSync(supabaseUmd);
   fs.writeFileSync(path.join(DIST, "vendor", "supabase.js"), umd);
   fs.copyFileSync(path.join(PWA, "manifest.webmanifest"), path.join(DIST, "manifest.webmanifest"));
+  fs.copyFileSync(path.join(PWA, ".htaccess"), path.join(DIST, ".htaccess"));
   const icons = require("./scripts/icons.js")(path.join(DIST, "icons"));
   // La versión del service worker cambia con el contenido: así cada publicación se descarga sola
   const version = require("crypto").createHash("sha256").update(app).update(umd).digest("hex").slice(0, 12);
