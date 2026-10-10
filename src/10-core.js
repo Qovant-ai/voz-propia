@@ -32,7 +32,7 @@ function loadProgress(o) {
   const p = Object.assign(DEF_PROGRESS(), o || {});
   p.errors = Object.assign({ en: {}, fr: {} }, p.errors || {});
   p.wpm = Object.assign({ en: [], fr: [] }, p.wpm || {});
-  p.deleted ||= []; p.stats ||= {}; p.cats ||= {}; p.level ||= {}; p.rate ||= {}; p.blocks ||= {};
+  p.deleted ||= []; p.stats ||= {}; p.cats ||= {}; p.level ||= {}; p.rate ||= {}; p.blocks ||= {}; p.songs ||= {};
   return p;
 }
 const S = {

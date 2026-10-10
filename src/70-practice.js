@@ -13,6 +13,7 @@ function viewPracticar() {
     if (k === "verbs") return viewVerbs();
     if (k === "review") return viewReview();
     if (k === "blocks") return viewBlocks();
+    if (k === "songs") return viewSongs();
   }
   const ai = aiOff() ? " · necesita Claude" : "";
   const meters = (keys, lang) => `<div class="mlist">${weakOrder(keys, lang).map(x => `<button class="meter mbtn" data-act="go" data-arg="${lang === "fr" ? "tense:" : "cat:"}${x.k}" aria-label="Practicar ${esc(lang === "fr" ? FR_CATS[x.k] : CATS[x.k])}"><span>${esc(lang === "fr" ? FR_CATS[x.k] : CATS[x.k])}</span><span class="prog"><i style="width:${x.n ? Math.round(x.acc * 100) : 0}%"></i></span><span>${x.n ? Math.round(x.acc * 100) + "%" : "—"}</span></button>`).join("")}</div>`;
@@ -24,6 +25,7 @@ function viewPracticar() {
       <button data-act="go" data-arg="errors"><span><b>Encuentra el error</b><small>Frases con los errores típicos de hispanohablantes · sin internet</small></span><span class="go">→</span></button>
       <button data-act="go" data-arg="irreg"><span><b>Verbos irregulares</b><small>go → went → gone: escribe pasado y participio · sin internet</small></span><span class="go">→</span></button>
       <button data-act="go" data-arg="phrases"><span><b>Frases avanzadas</b><small>Patrones que usan los nativos, para decir en voz alta</small></span><span class="go">→</span></button>
+      <button data-act="go" data-arg="songs"><span><b>Aprende con canciones</b><small>${esc(songArtists("en"))} · títulos traducidos y explicados</small></span><span class="go">→</span></button>
       <button data-act="go" data-arg="ai-drill"><span><b>Ejercicios nuevos con IA</b><small>12 frases creadas según tus errores${ai}</small></span><span class="go">→</span></button>
       <button data-act="go" data-arg="ai-phrases"><span><b>Frases nuevas con IA</b><small>8 frases un paso sobre tu nivel (${level("en").k})${ai}</small></span><span class="go">→</span></button>
     </div>
@@ -32,7 +34,8 @@ function viewPracticar() {
   return `
     <div class="stack"><h1>Lo básico, bien dicho</h1><p class="lead">Conjugación, números, la hora y fechas, siempre dentro de frases reales. Escribe, escucha y repite en voz alta.</p></div>
     <div class="panel">${levelPicker()}</div>
-    <div class="menu"><button data-act="go" data-arg="blocks"><span><b>Francés por bloques</b><small>${blkNext() ? `Sigue con la lección ${blkPos(blkNext())}: ${esc(blkNext().title)}` : "Las 10 lecciones aprendidas · repaso acumulado"} · escuchar, entender y decir · sin internet</small></span><span class="go">→</span></button></div>
+    <div class="menu"><button data-act="go" data-arg="blocks"><span><b>Francés por bloques</b><small>${blkNext() ? `Sigue con la lección ${blkPos(blkNext())}: ${esc(blkNext().title)}` : "Las 10 lecciones aprendidas · repaso acumulado"} · escuchar, entender y decir · sin internet</small></span><span class="go">→</span></button>
+      <button data-act="go" data-arg="songs"><span><b>Aprende con canciones</b><small>${esc(songArtists("fr"))} · títulos traducidos y explicados</small></span><span class="go">→</span></button></div>
     <div class="panel"><h3>Conjugación</h3>
       <div class="chips">${[[10, "10 esenciales"], [25, "Top 25"], [50, "Top 50"], [100, "Los 100"]].map(([n, t]) => `<button class="chip" data-act="conj-size" data-arg="${n}" aria-pressed="${conjCfg.size === n}">${t}</button>`).join("")}</div>
       <div class="chips">${Object.keys(FR_CATS).map(t => `<button class="chip" data-act="conj-tense" data-arg="${t}" aria-pressed="${tenses.includes(t)}">${FR_CATS[t]}</button>`).join("")}</div>
@@ -373,5 +376,6 @@ function goPractice(arg) {
   if (arg === "months") return startCards(FR_MONTHS, "Les mois de l'année", "fr", false);
   if (arg === "ai-verbs") return genVerbsAI();
   if (arg === "blocks") return startBlocks();
+  if (arg === "songs") return startSongs(L);
   if (L) render();
 }

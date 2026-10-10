@@ -122,6 +122,7 @@ c) Solo
       { tag: "avoir · présent", t: "J'**ai** trente-quatre ans.", es: "Tengo treinta y cuatro años.", note: "La edad va con avoir." },
       { tag: "aller · futur proche", t: "Je **vais aller** au Chili.", es: "Voy a ir a Chile.", note: "aller + infinitivo." },
     ];
+    if (/pasted this short excerpt/.test(p)) return { tr: "Traducción de prueba del verso.", why: "Explicación de prueba: **expresión** y por qué se dice así.", words: [{ t: "palabra", es: "significado" }], pron: "pista de prueba" };
     if (/Create ONE speaking prompt/.test(p)) return /French/.test(p) ? { p: "Qu'est-ce que tu as mangé hier ?", es: "¿Qué comiste ayer?", s: ["j'ai mangé", "c'était"] } : { p: "What have you been reading lately?", es: "¿Qué has estado leyendo últimamente?", s: ["I've been reading", "it was"] };
     return {};
   }

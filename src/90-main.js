@@ -1,6 +1,6 @@
 /* ===================== Navegación, acciones y arranque ===================== */
 const VIEWS = { hoy: () => viewHoy(), leer: () => viewLeer(), hablar: () => viewHablar(), practicar: () => viewPracticar(), biblioteca: () => viewBiblioteca() };
-const SUBS = { review: () => viewReview(), drill: () => viewDrill(), cards: () => viewCards(), nums: () => viewNums(), time: () => viewTime(), conjtable: () => viewConjTable(), verbs: () => viewVerbs(), blocks: () => viewBlocks() };
+const SUBS = { review: () => viewReview(), drill: () => viewDrill(), cards: () => viewCards(), nums: () => viewNums(), time: () => viewTime(), conjtable: () => viewConjTable(), verbs: () => viewVerbs(), blocks: () => viewBlocks(), songs: () => viewSongs() };
 function render(keep) {
   document.body.dataset.lang = S.lang;
   $("#lang-en")?.setAttribute("aria-pressed", String(S.lang === "en"));
@@ -104,6 +104,15 @@ const A = {
   "blk-mix": () => startBlockMix(),
   "blk-ai": () => genBlocksAI(),
   "blk-save": el => blkSaveHard(el),
+  // Canciones
+  "song-open": el => openSong(el.dataset.arg),
+  "song-list": () => { stopSay(); S.sub.id = null; render(); scrollTo(0, 0); },
+  "song-explain": () => explainLine(),
+  "song-save-ex": el => { const s = songById(S.sub.id), x = s?.ex[+el.dataset.arg]; songSave(el, x && { lang: s.L, type: "phrase", t: x[0], es: x[1], note: s.k, src: s.t }); },
+  "song-save-w": el => { const s = songById(S.sub.id), w = s?.w[+el.dataset.arg]; songSave(el, w && { lang: s.L, type: "word", t: w[0], es: w[1], pron: w[2] || "", src: `${s.t} · ${s.a}` }); },
+  "song-save-ans": el => { const s = songById(S.sub.id), a = S.sub.ans; songSave(el, a && { lang: s.L, type: "phrase", t: a.q, es: a.tr, note: a.why, src: s.t }); },
+  "song-tell": () => songTell(),
+  "song-done": () => songDone(),
   opt: el => pickOpt(+el.dataset.arg),
   judge: el => pickJudge(el.dataset.arg),
   check: () => checkTyped(),
@@ -170,6 +179,7 @@ document.addEventListener("input", e => {
   else if (t.id === "want") S.wantQ[S.lang] = t.value;
   else if (t.id === "fix-in") S.fixQ[S.lang] = t.value;
   else if (t.id === "ask") S.askQ = t.value;
+  else if (t.id === "song-q" && S.sub?.kind === "songs") S.sub.q = t.value;
   else if (t.id?.startsWith("rate-")) { const L = t.dataset.lang; S.progress.rate[L] = +t.value; const v = $("#rate-v-" + L); if (v) v.textContent = (+t.value).toFixed(2) + "×"; saveProgress(); }
 });
 document.addEventListener("change", e => { const t = e.target; if (t.id?.startsWith("voice-")) { LS.set("voice:" + t.dataset.lang, t.value); toast("Voz guardada en este dispositivo"); } });
