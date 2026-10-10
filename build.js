@@ -1,7 +1,7 @@
 // Une los módulos de src/ en index.html (la página que se publica).
 // Uso: node build.js          → index.html (versión artefacto, dentro de Claude)
 //      node build.js --test   → además dev/test.html, con un Claude simulado (dev/mock.js) para probar sin conexión
-//      node build.js --pwa    → dist/: la app instalable (Supabase + modo sin conexión) que se publica en GitHub Pages
+//      node build.js --pwa    → dist/: la app instalable (servidor en Supabase + modo sin conexión) que se publica en Hostinger
 const fs = require("fs"), path = require("path");
 const SRC = path.join(__dirname, "src");
 const files = fs.readdirSync(SRC).filter(f => /^\d\d-.*\.(html|js)$/.test(f)).sort();
@@ -31,8 +31,6 @@ if (process.argv.includes("--pwa")) {
   if (/^sb_secret_|service_role/i.test(config.key)) { console.error("Esa es una clave SECRETA de Supabase: nunca va en el navegador. Usa la publicable (sb_publishable_…)."); process.exit(1); }
   const adapter = fs.readFileSync(path.join(PWA, "adapter.js"), "utf8");
   try { new Function(adapter); } catch (e) { console.error("Error de sintaxis en pwa/adapter.js:", e.message); process.exit(1); }
-  const supabaseUmd = path.join(__dirname, "node_modules", "@supabase", "supabase-js", "dist", "umd", "supabase.js");
-  if (!fs.existsSync(supabaseUmd)) { console.error("Falta @supabase/supabase-js: ejecuta npm ci"); process.exit(1); }
 
   // 01-head va dentro de <head>; el resto de los .html es el cuerpo
   const head = read(htmlFiles[0]), body = htmlFiles.slice(1).map(read).join("\n\n");
@@ -42,7 +40,6 @@ ${head}
 </head>
 <body>
 ${body}
-<script src="vendor/supabase.js"></script>
 <script>window.VP_CONFIG = ${JSON.stringify(config)};</script>
 <script>
 ${adapter.trim()}
@@ -55,15 +52,13 @@ ${js}
 </html>
 `;
   fs.rmSync(DIST, { recursive: true, force: true });
-  fs.mkdirSync(path.join(DIST, "vendor"), { recursive: true });
+  fs.mkdirSync(DIST, { recursive: true });
   fs.writeFileSync(path.join(DIST, "index.html"), app);
-  const umd = fs.readFileSync(supabaseUmd);
-  fs.writeFileSync(path.join(DIST, "vendor", "supabase.js"), umd);
   fs.copyFileSync(path.join(PWA, "manifest.webmanifest"), path.join(DIST, "manifest.webmanifest"));
   fs.copyFileSync(path.join(PWA, ".htaccess"), path.join(DIST, ".htaccess"));
   const icons = require("./scripts/icons.js")(path.join(DIST, "icons"));
   // La versión del service worker cambia con el contenido: así cada publicación se descarga sola
-  const version = require("crypto").createHash("sha256").update(app).update(umd).digest("hex").slice(0, 12);
+  const version = require("crypto").createHash("sha256").update(app).digest("hex").slice(0, 12);
   fs.writeFileSync(path.join(DIST, "sw.js"), fs.readFileSync(path.join(PWA, "sw.js"), "utf8").replace("__VERSION__", version));
   console.log(`dist/ listo · index.html ${(app.length / 1024).toFixed(1)} KB · ${icons.length} íconos · versión ${version}`);
 }

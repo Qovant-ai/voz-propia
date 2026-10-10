@@ -11,9 +11,6 @@
   "engines": {
     "node": ">=20"
   },
-  "dependencies": {
-    "@supabase/supabase-js": "2.117.2"
-  },
   "devDependencies": {
     "@resvg/resvg-js": "2.6.2"
   }

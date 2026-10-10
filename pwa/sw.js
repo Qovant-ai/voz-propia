@@ -3,7 +3,7 @@
 const VERSION = "__VERSION__";
 const CACHE = "vp-shell-" + VERSION;
 const FONTS = "vp-fonts";
-const SHELL = ["./", "manifest.webmanifest", "vendor/supabase.js", "icons/icon.svg", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png"];
+const SHELL = ["./", "manifest.webmanifest", "icons/icon.svg", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
