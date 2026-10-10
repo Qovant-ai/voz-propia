@@ -56,6 +56,9 @@ ${js}
   fs.writeFileSync(path.join(DIST, "index.html"), app);
   fs.copyFileSync(path.join(PWA, "manifest.webmanifest"), path.join(DIST, "manifest.webmanifest"));
   fs.copyFileSync(path.join(PWA, ".htaccess"), path.join(DIST, ".htaccess"));
+  // El servidor también va dentro de dist/, por si el hosting busca el archivo de entrada en el directorio de salida
+  fs.copyFileSync(path.join(__dirname, "server.js"), path.join(DIST, "server.js"));
+  fs.writeFileSync(path.join(DIST, "package.json"), JSON.stringify({ name: "voz-propia-dist", private: true, scripts: { start: "node server.js" }, engines: { node: ">=20" } }, null, 2) + "\n");
   const icons = require("./scripts/icons.js")(path.join(DIST, "icons"));
   // La versión del service worker cambia con el contenido: así cada publicación se descarga sola
   const version = require("crypto").createHash("sha256").update(app).digest("hex").slice(0, 12);
