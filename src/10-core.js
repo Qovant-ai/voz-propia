@@ -32,7 +32,7 @@ function loadProgress(o) {
   const p = Object.assign(DEF_PROGRESS(), o || {});
   p.errors = Object.assign({ en: {}, fr: {} }, p.errors || {});
   p.wpm = Object.assign({ en: [], fr: [] }, p.wpm || {});
-  p.deleted ||= []; p.stats ||= {}; p.cats ||= {}; p.level ||= {}; p.rate ||= {};
+  p.deleted ||= []; p.stats ||= {}; p.cats ||= {}; p.level ||= {}; p.rate ||= {}; p.blocks ||= {};
   return p;
 }
 const S = {
@@ -312,11 +312,11 @@ const TTS = {
     return vs.slice().sort((a, b) => this.score(b, lang) - this.score(a, lang))[0];
   },
   rate(lang) { return S.progress.rate?.[lang] ?? (lang === "fr" ? 0.85 : 0.95); },
-  utter(text, lang) {
+  utter(text, lang, rate) {
     const u = new SpeechSynthesisUtterance(plain(text).replace(/[_]{2,}/g, " "));
     u.lang = lang === "fr" ? "fr-FR" : "en-US";
     const v = this.voice(lang); if (v) { u.voice = v; u.lang = v.lang; }
-    u.rate = this.rate(lang);
+    u.rate = rate || this.rate(lang);
     return u;
   },
 };
@@ -329,12 +329,12 @@ function stopSay() {
   $$(".para.playing").forEach(p => p.classList.remove("playing"));
   if (S.playing) { S.playing = null; const b = $("#playall"); if (b) { b.classList.remove("on"); b.textContent = "▶ Todo"; } }
 }
-function say(text, lang = S.lang, btn) {
+function say(text, lang = S.lang, btn, rate) {
   if (!TTS.ok) return toast("Este navegador no tiene voz para leer en voz alta");
   const same = btn && sayBtn === btn;
   stopSay();
   if (same) return;
-  const tok = ++sayTok, u = TTS.utter(text, lang);
+  const tok = ++sayTok, u = TTS.utter(text, lang, rate);
   if (btn) { btn.classList.add("on"); sayBtn = btn; }
   u.onend = u.onerror = () => { if (tok !== sayTok) return; btn?.classList.remove("on"); sayBtn = null; };
   speechSynthesis.speak(u);

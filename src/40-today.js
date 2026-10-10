@@ -28,13 +28,16 @@ function readSuggestion(lang) {
   if (reread) return { kind: "item", id: reread.id, title: "Relee un texto (2.ª vez)", sub: reread.title + " · releer da fluidez", min: reread.min || 5 };
   return { kind: "new", title: `Lectura nueva de ${pickSt.min} min`, sub: "Tema: " + (pickSt.topic || SURPRISE), min: pickSt.min };
 }
+// En francés inicial (A1, A1+) el calentamiento es la lección de bloques que toca; si ya están todas, el repaso acumulado
+const blkPlan = L => L === "fr" && levelIdx("fr") <= 1 ? { l: blkNext() } : null;
 function planSteps(L) {
   const nDue = dueCount(L), has = liveCards(L).length > 0;
   const w = L === "en" ? CATS[weakOrder(Object.keys(CATS), "en")[0].k] : FR_TENSES_BY_LEVEL[level("fr").k].map(t => FR_CATS[t]).join(", ");
-  const rd = readSuggestion(L), pr = todayPrompt(L);
+  const rd = readSuggestion(L), pr = todayPrompt(L), nb = blkPlan(L);
   return [
     { id: "review", title: "Repaso de tarjetas", sub: nDue ? `${nDue} ${nDue === 1 ? "tarjeta" : "tarjetas"} para hoy` : has ? "Al día: no hay tarjetas pendientes" : "Toca palabras al leer y guárdalas para empezar", min: Math.max(1, Math.round(nDue * 0.3)), done: has && !nDue, off: !has },
-    { id: "warm", title: L === "en" ? "Calentamiento: tiempos verbales" : "Calentamiento: conjugación", sub: (L === "en" ? "Foco de hoy: " : "Tiempos: ") + w, min: 3, done: isDone("warm", L) },
+    nb ? { id: "warm", title: "Calentamiento: francés por bloques", sub: nb.l ? `Lección ${nb.l.n}: ${nb.l.title}` : "Repaso acumulado de tus bloques", min: 5, done: isDone("warm", L) }
+      : { id: "warm", title: L === "en" ? "Calentamiento: tiempos verbales" : "Calentamiento: conjugación", sub: (L === "en" ? "Foco de hoy: " : "Tiempos: ") + w, min: 3, done: isDone("warm", L) },
     { id: "read", title: rd.title, sub: rd.sub, min: rd.min, done: isDone("read", L) },
     { id: "speak", title: "Habla 1 minuto", sub: pr.p, min: 3, done: isDone("speak", L) },
   ];
@@ -61,7 +64,7 @@ function viewHoy() {
 function onPlan(id) {
   const L = S.lang;
   if (id === "review") return startReview(L);
-  if (id === "warm") return startWarmup(L);
+  if (id === "warm") return blkPlan(L) ? blkWarmup() : startWarmup(L);
   if (id === "speak") { S.tab = "hablar"; S.speakMode = "minuto"; render(); return scrollTo(0, 0); }
   if (id === "read") {
     const rd = readSuggestion(L);

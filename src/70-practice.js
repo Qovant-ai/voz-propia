@@ -12,6 +12,7 @@ function viewPracticar() {
     if (k === "conjtable") return viewConjTable();
     if (k === "verbs") return viewVerbs();
     if (k === "review") return viewReview();
+    if (k === "blocks") return viewBlocks();
   }
   const ai = aiOff() ? " · necesita Claude" : "";
   const meters = (keys, lang) => `<div class="mlist">${weakOrder(keys, lang).map(x => `<button class="meter mbtn" data-act="go" data-arg="${lang === "fr" ? "tense:" : "cat:"}${x.k}" aria-label="Practicar ${esc(lang === "fr" ? FR_CATS[x.k] : CATS[x.k])}"><span>${esc(lang === "fr" ? FR_CATS[x.k] : CATS[x.k])}</span><span class="prog"><i style="width:${x.n ? Math.round(x.acc * 100) : 0}%"></i></span><span>${x.n ? Math.round(x.acc * 100) + "%" : "—"}</span></button>`).join("")}</div>`;
@@ -31,6 +32,7 @@ function viewPracticar() {
   return `
     <div class="stack"><h1>Lo básico, bien dicho</h1><p class="lead">Conjugación, números, la hora y fechas, siempre dentro de frases reales. Escribe, escucha y repite en voz alta.</p></div>
     <div class="panel">${levelPicker()}</div>
+    <div class="menu"><button data-act="go" data-arg="blocks"><span><b>Francés por bloques</b><small>${blkNext() ? `Sigue con la lección ${blkNext().n}: ${esc(blkNext().title)}` : "Las 10 lecciones aprendidas · repaso acumulado"} · escuchar, entender y decir · sin internet</small></span><span class="go">→</span></button></div>
     <div class="panel"><h3>Conjugación</h3>
       <div class="chips">${[[10, "10 esenciales"], [25, "Top 25"], [50, "Top 50"], [100, "Los 100"]].map(([n, t]) => `<button class="chip" data-act="conj-size" data-arg="${n}" aria-pressed="${conjCfg.size === n}">${t}</button>`).join("")}</div>
       <div class="chips">${Object.keys(FR_CATS).map(t => `<button class="chip" data-act="conj-tense" data-arg="${t}" aria-pressed="${tenses.includes(t)}">${FR_CATS[t]}</button>`).join("")}</div>
@@ -370,5 +372,6 @@ function goPractice(arg) {
   if (arg === "days") return startCards(FR_DAYS, "Les jours de la semaine", "fr", false);
   if (arg === "months") return startCards(FR_MONTHS, "Les mois de l'année", "fr", false);
   if (arg === "ai-verbs") return genVerbsAI();
+  if (arg === "blocks") return startBlocks();
   if (L) render();
 }

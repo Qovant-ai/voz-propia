@@ -1,6 +1,6 @@
 /* ===================== Navegación, acciones y arranque ===================== */
 const VIEWS = { hoy: () => viewHoy(), leer: () => viewLeer(), hablar: () => viewHablar(), practicar: () => viewPracticar(), biblioteca: () => viewBiblioteca() };
-const SUBS = { review: () => viewReview(), drill: () => viewDrill(), cards: () => viewCards(), nums: () => viewNums(), time: () => viewTime(), conjtable: () => viewConjTable(), verbs: () => viewVerbs() };
+const SUBS = { review: () => viewReview(), drill: () => viewDrill(), cards: () => viewCards(), nums: () => viewNums(), time: () => viewTime(), conjtable: () => viewConjTable(), verbs: () => viewVerbs(), blocks: () => viewBlocks() };
 function render(keep) {
   document.body.dataset.lang = S.lang;
   $("#lang-en")?.setAttribute("aria-pressed", String(S.lang === "en"));
@@ -30,6 +30,7 @@ function leaveSub() {
   if (s.kind === "drill" && !s.logged && s.i > 0) logTime(s.lang, "practice", Date.now() - s.t0);
   if (s.kind === "review" && !s.logged && s.done) { logTime(s.lang, "review", Date.now() - s.t0); updateBadge(); }
   if ((s.kind === "nums" || s.kind === "time") && s.count) logTime(s.lang, "practice", Date.now() - s.t0);
+  if (s.kind === "blocks" && s.stage !== "list" && s.i > 0 && !s.logged) logTime("fr", "practice", Date.now() - s.t0);
   if (s.kind === "conjtable" && s.from === "verbs") S.sub = { kind: "verbs", tab: s.tab, lang: "fr", q: "" };
   else S.sub = null;
   if (s.src === "warmup" && s.logged) S.tab = "hoy";
@@ -92,6 +93,17 @@ const A = {
   shadow: () => shadowModel(),
   // Practicar
   go: el => goPractice(el.dataset.arg),
+  "blk-open": el => startBlockLesson(+el.dataset.arg),
+  "blk-list": () => { if (S.sub?.stage !== "list" && S.sub?.i > 0 && !S.sub.logged) logTime("fr", "practice", Date.now() - S.sub.t0); startBlocks(); },
+  "blk-stage": el => blkStage(el.dataset.arg),
+  "blk-show": () => { S.sub.shown = true; render(); },
+  "blk-ear": el => blkGrade("ear", el.dataset.arg === "1"),
+  "blk-say": el => blkGrade("said", el.dataset.arg === "1"),
+  "blk-slow": el => { const it = S.sub.items[S.sub.i]; if (it) say(it.fr, "fr", el, 0.6); },
+  "blk-all": () => sayQueue(S.sub.blocks.map(b => b[0].replace(/\s*[\/·]\s*/g, ", ").replace(/…/g, "")), "fr"),
+  "blk-mix": () => startBlockMix(),
+  "blk-ai": () => genBlocksAI(),
+  "blk-save": el => blkSaveHard(el),
   opt: el => pickOpt(+el.dataset.arg),
   judge: el => pickJudge(el.dataset.arg),
   check: () => checkTyped(),
