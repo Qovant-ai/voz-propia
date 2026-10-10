@@ -25,7 +25,22 @@ npm test               # genera dev/test.html con el Claude simulado
 npm run build          # genera index.html (versión artefacto)
 ```
 
-Cada push a `main` compila la app y la deja en la rama `hostinger` (`.github/workflows/deploy.yml`). Hostinger copia esa rama a `public_html`.
+## Desplegar en Hostinger desde GitHub
+
+Hostinger → Sitios web → Agregar sitio → app de Node.js → importar el repositorio `Qovant-ai/voz-propia`, rama `main`:
+
+| Campo | Valor |
+|---|---|
+| Versión de Node | 22 |
+| Comando de instalación | `npm ci` |
+| Comando de build | `npm run build:pwa` |
+| Directorio de salida | `dist` |
+| Archivo de entrada / comando de inicio | `server.js` / `npm start` |
+| Variables de entorno | las de `.env.example` |
+
+`npm start` sirve `dist/` en el puerto de la variable `PORT`, que pone Hostinger. Cada push a `main` vuelve a desplegar.
+
+Alternativa sin compilar en Hostinger: cada push a `main` también deja la app ya compilada en la rama `hostinger` (`.github/workflows/deploy.yml`); el Git de hPanel puede copiar esa rama a `public_html`.
 
 ## Seguridad y datos
 

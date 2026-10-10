@@ -6,4 +6,5 @@ dev/test.html
 dev/private/
 .claude/
 .env*
+!.env.example
 voz-propia-hostinger.zip
