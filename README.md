@@ -9,7 +9,7 @@ Funciona de dos formas con el mismo código:
 
 ## Estructura
 
-- `src/` — la app en módulos, en orden: diseño (`01-head.html`), estructura (`02-body.html`), núcleo (`10-core.js`), datos (`20`–`25`, con las lecciones de francés por bloques en `25`), repaso espaciado (`30`), Hoy (`40`), Leer (`50`), Hablar (`60`), Practicar (`70`), Bloques (`75`), Biblioteca (`80`) y navegación (`90`).
+- `src/` — la app en módulos, en orden: diseño (`01-head.html`), estructura (`02-body.html`), núcleo (`10-core.js`), datos (`20`–`26`, con las lecciones de francés por bloques en `25` (nivel 1) y `26` (nivel 2, intercalado)), repaso espaciado (`30`), Hoy (`40`), Leer (`50`), Hablar (`60`), Practicar (`70`), Bloques (`75`), Biblioteca (`80`) y navegación (`90`).
 - `pwa/` — lo propio de la app instalable: `adapter.js` (conecta la app con la función `vp` y pide la llave del dispositivo), `sw.js` (modo sin conexión), `manifest.webmanifest`, `head.html` y `config.json` (URL del proyecto y clave pública).
 - `scripts/icons.js` — genera los íconos desde el logo del ascensor en `src/02-body.html`.
 - `supabase/` — las migraciones y la función `vp`: revisa la llave del dispositivo, guarda los datos y llama a Claude con la clave guardada como secreto.

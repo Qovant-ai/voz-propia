@@ -1,11 +1,24 @@
 /* ===================== Practicar → Bloques (francés): bloques → escuchar → decirlo tú ===================== */
 // Una lección se da por aprendida cuando entiendes y dices al menos 7 de sus 10 frases; si no, se propone repetirla.
+// Las lecciones del nivel 2 van intercaladas con las del 1 (BLK_ORDER) y cada lección mezcla 3 frases de repaso de las anteriores.
 const BLK_PASS = 7;
 const blkStore = () => (S.progress.blocks ||= {});
 const blkLearned = n => { const r = blkStore()[n]; return !!r && r.ear >= BLK_PASS && r.say >= BLK_PASS; };
 const blkNext = () => FR_BLOCKS.find(l => !blkLearned(l.n)) || null;
 const blkKnown = () => FR_BLOCKS.filter(l => blkLearned(l.n));
 const blkItems = l => l.s.map(([fr, es, note]) => ({ fr, es, note: note || "" }));
+const blkPos = l => FR_BLOCKS.indexOf(l) + 1;
+const blkLabel = l => `Lección ${blkPos(l)}${l.lv === 2 ? " · nivel 2" : ""}`;
+// Frases de lecciones anteriores ya aprendidas, para intercalarlas en la lección nueva
+function blkReview(l, k = 3) {
+  const before = FR_BLOCKS.slice(0, FR_BLOCKS.indexOf(l)).filter(x => blkLearned(x.n));
+  return shuffle(before.flatMap(x => blkItems(x).map(it => ({ ...it, rev: x.title })))).slice(0, k);
+}
+// Lo que ya sabe, para que las lecturas y las frases nuevas lo reciclen
+function blkKnownLine() {
+  const k = blkKnown(); if (!k.length) return "";
+  return ` Blocs déjà appris par l'élève, à recycler en priorité : ${k.flatMap(l => l.b.map(b => b[0])).slice(0, 90).join(" ; ")}.`;
+}
 
 function startBlocks() { stopSay(); S.sub = { kind: "blocks", tab: S.tab, lang: "fr", stage: "list" }; render(); scrollTo(0, 0); }
 function startBlockSession(o) {
@@ -16,7 +29,9 @@ function startBlockSession(o) {
 }
 function startBlockLesson(n, src) {
   const l = FR_BLOCKS.find(x => x.n === n); if (!l) return;
-  startBlockSession({ n, title: `Lección ${n} · ${l.title}`, idea: l.idea, blocks: l.b, hunt: l.hunt, items: blkItems(l), src });
+  const items = blkItems(l);
+  blkReview(l).forEach((r, k) => items.splice(3 + k * 4, 0, r));
+  startBlockSession({ n, title: `${blkLabel(l)} · ${l.title}`, idea: l.idea, blocks: l.b, hunt: l.hunt, items, src });
 }
 // Repaso acumulado: frases de todas las lecciones aprendidas (o de la primera si aún no hay ninguna)
 function startBlockMix(src) {
@@ -40,7 +55,7 @@ function blkList() {
   <div class="plan">${FR_BLOCKS.map(l => {
     const r = blkStore()[l.n], ok = blkLearned(l.n), isNext = nx && nx.n === l.n;
     const sub = ok ? `Aprendida · entendiste ${r.ear}/10 y dijiste ${r.say}/10` : r ? `Repítela: ${r.ear}/10 de oído y ${r.say}/10 dichas (meta: ${BLK_PASS})` : l.b.slice(0, 3).map(b => b[0].split(" · ")[0]).join(" · ") + " …";
-    return `<button class="step${ok ? " done" : ""}${isNext ? " next" : ""}" data-act="blk-open" data-arg="${l.n}"><span class="n">${ok ? "✓" : l.n}</span><span style="min-width:0"><b>${esc(l.title)}</b><small>${esc(sub)}</small></span><span class="min">${isNext ? "Sigue aquí" : ""}</span></button>`;
+    return `<button class="step${ok ? " done" : ""}${isNext ? " next" : ""}" data-act="blk-open" data-arg="${l.n}"><span class="n">${ok ? "✓" : blkPos(l)}</span><span style="min-width:0"><b>${esc(l.title)}</b><small>${l.lv === 2 ? "Nivel 2 · " : ""}${esc(sub)}</small></span><span class="min">${isNext ? "Sigue aquí" : ""}</span></button>`;
   }).join("")}</div>
   <div class="menu">
     <button data-act="blk-mix"><span><b>Repaso acumulado</b><small>10 frases al azar de ${known ? "tus lecciones aprendidas" : "la lección 1"} · sin internet</small></span><span class="go">→</span></button>
@@ -66,13 +81,14 @@ function blkPhrase(d) {
     <div class="prog"><i style="width:${(d.i / d.items.length) * 100}%"></i></div>`;
   const reveal = `<p class="t ctx" lang="fr" style="font-family:var(--read);font-size:1.25rem">${wrapWords(md(it.fr), gs)}</p>${ear ? `<p class="es">${esc(it.es)}</p>` : ""}${it.note ? `<p class="note">${md(it.note)}</p>` : ""}`;
   const hunt = ear && d.i === 0 && d.hunt.length ? `<p class="hint">Mientras escuchas, caza estas palabras: ${d.hunt.map(h => `<b lang="fr">${esc(h)}</b>`).join(" · ")}</p>` : "";
-  if (ear) return head + `<p class="eyebrow">Frase ${d.i + 1} de ${d.items.length}</p>${hunt}
+  const rev = it.rev ? `<span class="tag" style="align-self:flex-start">Repaso · ${esc(it.rev)}</span>` : "";
+  if (ear) return head + `<p class="eyebrow">Frase ${d.i + 1} de ${d.items.length}</p>${rev}${hunt}
     <p class="lead">Escucha sin leer. Intenta entenderla entera y tradúcela mentalmente al español.</p>
     <div class="row"><button class="btn" data-act="say" data-say="${esc(it.fr)}" data-lang="fr">▶ Escuchar</button><button class="btn quiet" data-act="blk-slow">▶ Más lento</button></div>
     ${d.shown ? `<div class="card">${reveal}</div>
       <div class="opts" style="grid-template-columns:1fr 1fr"><button class="opt" data-act="blk-ear" data-arg="0">No la entendí</button><button class="opt" data-act="blk-ear" data-arg="1">La entendí</button></div>`
       : `<button class="btn ghost wide" data-act="blk-show">Ver la frase y la traducción</button>`}`;
-  return head + `<p class="eyebrow">Frase ${d.i + 1} de ${d.items.length}</p>
+  return head + `<p class="eyebrow">Frase ${d.i + 1} de ${d.items.length}</p>${rev}
     <p class="lead">Dila en voz alta en francés, armándola con los bloques. Después compara.</p>
     <div class="card"><p class="t" style="font-size:1.2rem">${esc(it.es)}</p>${d.shown ? reveal : ""}</div>
     ${d.shown ? `<div class="row"><button class="btn quiet small" data-act="say" data-say="${esc(it.fr)}" data-lang="fr">▶ Escuchar</button><span class="hint">Repítela imitando la voz.</span></div>
@@ -81,7 +97,9 @@ function blkPhrase(d) {
 }
 
 function blkDone(d) {
-  const ear = Object.values(d.ear).filter(Boolean).length, said = Object.values(d.said).filter(Boolean).length, n = d.items.length;
+  // Las frases de repaso no cuentan para aprobar la lección
+  const own = d.items.map((_, i) => i).filter(i => !d.items[i].rev), n = own.length, nRev = d.items.length - n;
+  const ear = own.filter(i => d.ear[i]).length, said = own.filter(i => d.said[i]).length;
   if (!d.logged) {
     d.logged = true;
     logTime("fr", "practice", Date.now() - d.t0);
@@ -90,12 +108,12 @@ function blkDone(d) {
     if (d.fresh) saveItem({ id: uid(), kind: "cards", lang: "fr", title: d.title, items: d.items.map(x => ({ t: x.fr, es: x.es, note: x.note })), ts: Date.now(), date: today() });
   }
   const hard = d.items.filter((_, i) => !d.ear[i] || !d.said[i]), ok = d.n && blkLearned(d.n), nx = blkNext();
-  return `<div class="stack"><p class="eyebrow">${esc(d.title)}</p><h1>Entendiste ${ear} de ${n} y dijiste ${said} de ${n}</h1>
+  return `<div class="stack"><p class="eyebrow">${esc(d.title)}</p><h1>Entendiste ${ear} de ${n} y dijiste ${said} de ${n}</h1>${nRev ? `<p class="hint">Más ${nRev} frases de repaso de lecciones anteriores, mezcladas para que no se olviden.</p>` : ""}
     <p class="lead">${!d.n ? "Repasar lo ya aprendido es lo que lo deja en automático." : ok ? "Lección aprendida. Mañana sigue con la próxima: va a reciclar todo lo de hoy." : `Para pasar a la siguiente necesitas ${BLK_PASS} de 10 en cada parte. Repítela mañana: la segunda vez sale mucho mejor.`}</p></div>
     ${hard.length ? `<div class="panel"><h3>Las que te costaron</h3>${hard.map(x => `<div class="fix"><p class="ft" lang="fr"><b>${esc(x.fr)}</b></p><p class="hint">${esc(x.es)}</p></div>`).join("")}</div>
       <button class="btn ghost wide" data-act="blk-save">Guardar ${hard.length === 1 ? "esta frase" : `estas ${hard.length} frases`} para el repaso diario</button>` : ""}
     <div class="row">${d.n ? `<button class="btn quiet" data-act="blk-open" data-arg="${d.n}">Repetir la lección</button>` : ""}
-      ${d.src !== "warmup" && ok && nx ? `<button class="btn" data-act="blk-open" data-arg="${nx.n}" style="flex:1">Lección ${nx.n} →</button>` : ""}</div>
+      ${d.src !== "warmup" && ok && nx ? `<button class="btn" data-act="blk-open" data-arg="${nx.n}" style="flex:1">Lección ${blkPos(nx)} →</button>` : ""}</div>
     <button class="btn ${hard.length ? "quiet" : ""} wide" data-act="${d.src === "warmup" ? "back" : "blk-list"}">${d.src === "warmup" ? "Volver a Hoy" : "Volver a las lecciones"}</button>`;
 }
 
@@ -122,8 +140,8 @@ async function genBlocksAI() {
   const known = blkKnown(); if (!known.length) return;
   const blocks = known.flatMap(l => l.b.map(b => `${b[0]} (${b[1]})`)).join("; ");
   const data = await genJSON(`Pour un hispanophone débutant qui apprend le français avec la méthode des « blocs ». ${levelLine("fr")}
-Voici TOUS les blocs qu'il connaît (leçons 1 à ${known.at(-1).n}) : ${blocks}.
-Écris 10 phrases NOUVELLES, courtes et utiles au quotidien, en combinant ces blocs : verbe-clé conjugué + infinitif (je veux / je peux / je dois / je vais + verbe), pronom avant l'infinitif (je veux le voir), ne … pas autour du verbe, questions par simple intonation. Mélange les blocs de plusieurs leçons. N'utilise que ces blocs et des mots très fréquents ou transparents pour un hispanophone. Varie les personnes (je, tu, il, elle, on). Thèmes possibles, en version très simple : ${themeHint()}. Graine : ${uid()}.
+Voici TOUS les blocs qu'il connaît : ${blocks}.
+Écris 10 phrases NOUVELLES, courtes et utiles au quotidien, en combinant ces blocs : verbe-clé conjugué + infinitif (je veux / je peux / je dois / je vais + verbe), pronom avant l'infinitif (je veux le voir), ne … pas autour du verbe, questions par simple intonation. Mélange les blocs de plusieurs leçons ; si les blocs incluent le passé (j'ai mangé, je suis allé…), mélange présent, futur proche et passé. N'utilise que ces blocs et des mots très fréquents ou transparents pour un hispanophone. Varie les personnes (je, tu, il, elle, on). Thèmes possibles, en version très simple : ${themeHint()}. Graine : ${uid()}.
 Réponds UNIQUEMENT avec un tableau JSON de 10 objets : {"fr": phrase en français, "es": traducción natural al español de Chile, "note": EN ESPAÑOL, una frase corta: qué bloques combina y un truco}.`, "Combinando tus bloques en frases nuevas…");
   const ok = Array.isArray(data) ? data.filter(x => x && typeof x.fr === "string" && typeof x.es === "string").map(x => ({ fr: x.fr, es: x.es, note: String(x.note || "") })) : [];
   if (ok.length) startBlockSession({ stage: "ear", title: "Frases nuevas con tus bloques", items: ok, fresh: true });
